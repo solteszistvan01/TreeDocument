@@ -1,6 +1,19 @@
 import csv
 
+#TODO: Separate the code below to an interface!
+class TraversalStrategy:
+    def traverse(self, node):
+        raise NotImplementedError("Traversal method should be implemented by subclasses.")
 
+class DFSTraversal(TraversalStrategy):
+    def traverse(self, node):
+        elements = [node.content]
+        for child in node.children:
+            elements.extend(self.traverse(child))
+        return elements
+
+
+#TODO: Separate the code below to a class!
 class TreeNode:
 
     def __init__(self, content):
@@ -100,3 +113,58 @@ class TreeDocument:
     def __str__(self):
 
         return self.root.__str__()
+
+    def traverse(self, strategy):#TODO: Make sure, that strategy can always be taken by traverse and find a testing kit that allows putting types as restrictions to parameters of functions!
+        """
+        Traverses the tree using the specified method and returns a list of elements.
+        """
+        return self._dfs_traversal(self.root)#No typing is provided, strategy is a TraversalStrategy!
+    def _dfs_traversal(self, node):
+        """
+        Perform depth-first search traversal.
+        """
+        elements = [node.content]
+        for child in node.children:
+            elements.extend(self._dfs_traversal(child))
+        return elements
+    
+# Example CSV content
+csv_content = """Name,Age,Occupation
+Alice,30,Engineer
+Bob,25,Designer"""
+
+
+#TODO: Create a test instance from the code in the next period!
+# Parse the CSV content into a tree
+root_node = TreeNode.parse_csv_new(csv_content)
+tree_doc = TreeDocument(root_node)
+
+# Create a DFS traversal strategy
+dfs_strategy = DFSTraversal()
+
+# Perform DFS traversal
+elements_dfs = tree_doc.traverse(dfs_strategy)
+
+# Print the elements in DFS order
+print("DFS Traversal Result:")
+for element in elements_dfs:
+    print(element)
+
+#TODO: Separate the code below to a test file!
+import pytest
+# Test data
+test_data = [
+    (
+        """Name,Age,Occupation\nAlice,30,Engineer\nBob,25,Designer""",
+        ["CSV Root", "Header", "Alice | 30 | Engineer", "Bob | 25 | Designer"]
+    ),
+    # Add more test cases here
+]
+
+@pytest.mark.parametrize("csv_content,expected", test_data)
+def test_dfs_traversal(csv_content, expected):
+    root_node = TreeNode.parse_csv_new(csv_content)
+    tree_doc = TreeDocument(root_node)
+    dfs_strategy = DFSTraversal()
+    result = tree_doc.traverse(dfs_strategy)
+    assert result == expected
